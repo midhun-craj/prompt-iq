@@ -1,0 +1,27 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: ai-service
+
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/ai_service_db?authSource=admin
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+
+analysis-service:
+  url: http://analysis-service:8000

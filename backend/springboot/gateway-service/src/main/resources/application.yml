@@ -1,0 +1,25 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: gateway-service
+    
+  cloud:
+    gateway: 
+      routes:
+        - id: ai-service
+          uri: http://localhost:8001
+          predicates:
+            - Path=/api/llm/**
+            - Path=/api/prompts/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:  
+      probes:
+        enabled: true

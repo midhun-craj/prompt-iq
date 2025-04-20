@@ -1,0 +1,90 @@
+services:
+
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_DATABASE: ai_service_db
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    networks:
+      - backend
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - mongodb_data:/data/db
+
+  ai-service:
+    build: 
+      context: ./springboot/ai-service
+      dockerfile: Dockerfile
+    container_name: ai-service
+    expose:
+      - "8082"
+    env_file:
+      - ./springboot/ai-service/.env
+    entrypoint: ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
+    depends_on:
+      - mongodb
+    networks:
+      - backend
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://ai-service:8082/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - maven_cache:/root/.m2
+
+  gateway-service:
+    build:
+      context: ./springboot/gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8081:8081"
+    expose:
+      - "8081"
+    entrypoint: ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
+    networks:
+      - backend
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://gateway-service:8081/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - maven_cache:/root/.m2
+
+  analysis-service:
+    build: 
+      context: ./fastapi/analysis-service
+      dockerfile: Dockerfile
+    container_name: analysis-service
+    expose:
+      - "8000"
+    networks:
+      - backend
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/analyze/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  backend: {}
+
+volumes:
+  mongodb_data: {}
+  maven_cache: {}
