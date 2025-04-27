@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
+@import 'tailwindcss';
+
+@theme {
+    --font-bangers: 'Bangers', 'sans-serif'
+}
+
+* {
+    font-family: monospace;
+}
+
+h1 {
+    font-family: 'bangers';
+}
+
+h2, button {
+    font-family: 'bangers';
+    letter-spacing: .1em;
+}
